@@ -64,9 +64,8 @@ def refresh_schemas(min_age_seconds: int = 3600 * 24) -> int:  # noqa: C901
     for kind, data in JSON_SCHEMAS.items():
         url = data["url"]
         if "#" in url:
-            raise RuntimeError(
-                f"Schema URLs cannot contain # due to python-jsonschema limitation: {url}",
-            )
+            msg = f"Schema URLs cannot contain # due to python-jsonschema limitation: {url}"
+            raise RuntimeError(msg)
         path = Path(f"{os.path.relpath(os.path.dirname(__file__))}/{kind}.json")
         _logger.debug("Refreshing %s schema ...", kind)
         request = Request(url)
@@ -74,7 +73,7 @@ def refresh_schemas(min_age_seconds: int = 3600 * 24) -> int:  # noqa: C901
         if etag:
             request.add_header("If-None-Match", f'"{data.get("etag")}"')
         try:
-            with urllib.request.urlopen(request, timeout=10) as response:
+            with urllib.request.urlopen(request, timeout=10) as response:  # noqa: S310
                 if response.status == 200:
                     content = response.read().decode("utf-8").rstrip()
                     etag = response.headers["etag"].strip('"')
@@ -115,7 +114,7 @@ def refresh_schemas(min_age_seconds: int = 3600 * 24) -> int:  # noqa: C901
 
 if __name__ == "__main__":
     if refresh_schemas(60 * 10):  # pragma: no cover
-        print("Schemas were updated.")
+        print("Schemas were updated.")  # noqa: T201
         sys.exit(1)
     else:  # pragma: no cover
-        print("Schemas not updated", 0)
+        print("Schemas not updated", 0)  # noqa: T201

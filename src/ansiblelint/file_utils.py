@@ -284,13 +284,8 @@ class Lintable:
 
     def _populate_content_cache_from_disk(self) -> None:
         # Can raise UnicodeDecodeError
-        try:
-            self._content = self.path.expanduser().resolve().read_text(encoding="utf-8")
-        except FileNotFoundError as exc:
-            if vars(options).get("progressive"):
-                self._content = ""
-            else:
-                raise exc
+        self._content = self.path.expanduser().resolve().read_text(encoding="utf-8")
+
         if self._original_content is None:
             self._original_content = self._content
 
@@ -309,7 +304,8 @@ class Lintable:
         has not already been populated.
         """
         if not isinstance(value, str):
-            raise TypeError(f"Expected str but got {type(value)}")
+            msg = f"Expected str but got {type(value)}"
+            raise TypeError(msg)
         if self._original_content is None:
             if self._content is not None:
                 self._original_content = self._content
@@ -426,7 +422,7 @@ def discover_lintables(options: Options) -> dict[str, Any]:
 
     try:
         out_present = subprocess.check_output(
-            git_command_present,
+            git_command_present,  # noqa: S603
             stderr=subprocess.STDOUT,
             text=True,
         ).split("\x00")[:-1]
@@ -436,7 +432,7 @@ def discover_lintables(options: Options) -> dict[str, Any]:
         )
 
         out_absent = subprocess.check_output(
-            git_command_absent,
+            git_command_absent,  # noqa: S603
             stderr=subprocess.STDOUT,
             text=True,
         ).split("\x00")[:-1]

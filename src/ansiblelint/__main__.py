@@ -226,11 +226,6 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     _logger.debug("Options: %s", options)
     _logger.debug(os.getcwd())
 
-    if options.progressive:
-        _logger.warning(
-            "Progressive mode is deprecated and will be removed in next major version, use ignore files instead: https://ansible-lint.readthedocs.io/configuring/#ignoring-rules-for-entire-files",
-        )
-
     if not options.offline:
         # pylint: disable=import-outside-toplevel
         from ansiblelint.schemas import refresh_schemas
@@ -261,38 +256,6 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         _do_transform(result, options)
 
     mark_as_success = True
-    if result.matches and options.progressive:
-        mark_as_success = False
-        _logger.info(
-            "Matches found, running again on previous revision in order to detect regressions",
-        )
-        with _previous_revision():
-            _logger.debug("Options: %s", options)
-            _logger.debug(os.getcwd())
-            old_result = _get_matches(rules, options)
-            # remove old matches from current list
-            matches_delta = list(set(result.matches) - set(old_result.matches))
-            if len(matches_delta) == 0:
-                _logger.warning(
-                    "Total violations not increased since previous "
-                    "commit, will mark result as success. (%s -> %s)",
-                    len(old_result.matches),
-                    len(matches_delta),
-                )
-                mark_as_success = True
-
-            ignored = 0
-            for match in result.matches:
-                # if match is not new, mark is as ignored
-                if match not in matches_delta:
-                    match.ignored = True
-                    ignored += 1
-            if ignored:
-                _logger.warning(
-                    "Marked %s previously known violation(s) as ignored due to"
-                    " progressive mode.",
-                    ignored,
-                )
 
     if options.strict and result.matches:
         mark_as_success = False
@@ -328,7 +291,7 @@ def _previous_revision() -> Iterator[None]:
     rel_exclude_paths = [normpath(p) for p in options.exclude_paths]
     options.exclude_paths = [abspath(p, worktree_dir) for p in rel_exclude_paths]
     revision = subprocess.run(
-        [*GIT_CMD, "rev-parse", "HEAD^1"],
+        [*GIT_CMD, "rev-parse", "HEAD^1"],  # noqa: S603
         check=True,
         text=True,
         stdout=subprocess.PIPE,
@@ -342,14 +305,14 @@ def _previous_revision() -> Iterator[None]:
     # Run check will fail if worktree_dir already exists
     # pylint: disable=subprocess-run-check
     subprocess.run(
-        [*GIT_CMD, "worktree", "add", "-f", worktree_dir],
+        [*GIT_CMD, "worktree", "add", "-f", worktree_dir],  # noqa: S603
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     try:
         with cwd(worktree_dir):
             subprocess.run(
-                [*GIT_CMD, "checkout", revision],
+                [*GIT_CMD, "checkout", revision],  # noqa: S603
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 check=True,
@@ -393,7 +356,7 @@ def path_inject() -> None:  # noqa: C901
             paths[idx] = os.path.expanduser(path)
             expanded = True
     if expanded:  # pragma: no cover
-        print(
+        print(  # noqa: T201
             "WARNING: PATH altered to expand ~ in it. Read https://stackoverflow.com/a/44704799/99834 and correct your system configuration.",
             file=sys.stderr,
         )
@@ -412,7 +375,7 @@ def path_inject() -> None:  # noqa: C901
 
     if not os.environ.get("PYENV_VIRTUAL_ENV", None):
         if inject_paths:
-            print(
+            print(  # noqa: T201
                 f"WARNING: PATH altered to include {', '.join(inject_paths)} :: This is usually a sign of broken local setup, which can cause unexpected behaviors.",
                 file=sys.stderr,
             )
@@ -424,7 +387,8 @@ def path_inject() -> None:  # noqa: C901
     # our dependency, but addressing this would be done by ansible-compat.
     for cmd in ("ansible", "git"):
         if not shutil.which(cmd):
-            raise RuntimeError(f"Failed to find runtime dependency '{cmd}' in PATH")
+            msg = f"Failed to find runtime dependency '{cmd}' in PATH"
+            raise RuntimeError(msg)
 
 
 # Based on Ansible implementation

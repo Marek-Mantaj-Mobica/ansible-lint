@@ -132,10 +132,7 @@ class Options:  # pylint: disable=too-many-instance-attributes,too-few-public-me
     enable_list: list[str] = field(default_factory=list)
     skip_action_validation: bool = True
     strict: bool = False
-    rules: dict[
-        str,
-        Any,
-    ] = field(
+    rules: dict[str, Any] = field(
         default_factory=dict,
     )  # Placeholder to set and keep configurations for each rule.
     profile: str | None = None
@@ -144,7 +141,6 @@ class Options:  # pylint: disable=too-many-instance-attributes,too-few-public-me
     config_file: str | None = None
     generate_ignore: bool = False
     rulesdir: list[Path] = field(default_factory=list)
-    progressive: bool = False
     cache_dir_lock: FileLock | None = None
     use_default_rules: bool = False
     version: bool = False  # display version command
@@ -168,7 +164,8 @@ def get_rule_config(rule_id: str) -> dict[str, Any]:
     """Get configurations for the rule ``rule_id``."""
     rule_config = options.rules.get(rule_id, {})
     if not isinstance(rule_config, dict):  # pragma: no branch
-        raise RuntimeError(f"Invalid rule config for {rule_id}: {rule_config}")
+        msg = f"Invalid rule config for {rule_id}: {rule_config}"
+        raise RuntimeError(msg)
     return rule_config
 
 
@@ -266,7 +263,7 @@ def get_version_warning() -> str:
             "https://api.github.com/repos/ansible/ansible-lint/releases/latest"
         )
         try:
-            with urllib.request.urlopen(release_url) as url:
+            with urllib.request.urlopen(release_url) as url:  # noqa: S310
                 data = json.load(url)
                 with open(cache_file, "w", encoding="utf-8") as f:
                     json.dump(data, f)

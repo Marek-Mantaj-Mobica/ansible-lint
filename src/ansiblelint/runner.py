@@ -124,7 +124,7 @@ class Runner:
             if isinstance(lintable.data, States) and lintable.exc:
                 matches.append(
                     MatchError(
-                        filename=lintable,
+                        lintable=lintable,
                         message=str(lintable.exc),
                         details=str(lintable.exc.__cause__),
                         rule=LoadingFailureRule(),
@@ -196,7 +196,8 @@ class Runner:
         while visited != self.lintables:
             for lintable in self.lintables - visited:
                 try:
-                    for child in ansiblelint.utils.find_children(lintable):
+                    children = ansiblelint.utils.find_children(lintable)
+                    for child in children:
                         if self.is_excluded(child):
                             continue
                         self.lintables.add(child)
@@ -207,7 +208,7 @@ class Runner:
                     exc.rule = LoadingFailureRule()
                     yield exc
                 except AttributeError:
-                    yield MatchError(filename=lintable, rule=LoadingFailureRule())
+                    yield MatchError(lintable=lintable, rule=LoadingFailureRule())
                 visited.add(lintable)
 
 
@@ -218,9 +219,8 @@ def _get_matches(rules: RulesCollection, options: Options) -> LintResult:
         if "unskippable" in rule.tags:
             for entry in (*options.skip_list, *options.warn_list):
                 if rule.id == entry or entry.startswith(f"{rule.id}["):
-                    raise RuntimeError(
-                        f"Rule '{rule.id}' is unskippable, you cannot use it in 'skip_list' or 'warn_list'. Still, you could exclude the file.",
-                    )
+                    msg = f"Rule '{rule.id}' is unskippable, you cannot use it in 'skip_list' or 'warn_list'. Still, you could exclude the file."
+                    raise RuntimeError(msg)
     matches = []
     checked_files: set[Lintable] = set()
     runner = Runner(

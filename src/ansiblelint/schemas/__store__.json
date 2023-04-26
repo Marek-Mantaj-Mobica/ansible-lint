@@ -1,6 +1,6 @@
 {
   "ansible-lint-config": {
-    "etag": "1697c92b482f53635bd57d7715f83e63a168c834a648ec945ab90207c36e696f",
+    "etag": "ae3bdb0eed9825f89ad76dc5dc4d812ca08591558bbdde401ba68030d658c6f6",
     "url": "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible-lint-config.json"
   },
   "ansible-navigator-config": {
@@ -24,7 +24,7 @@
     "url": "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/inventory.json"
   },
   "meta": {
-    "etag": "45184c720bb76a0160b44a0fe1cb024075ae275b9a978fd547cc2c0a14e32ecc",
+    "etag": "449550c81ab905d3ac30b2672bf23a43cf1a71eef168ab08e8caee8c4a32bce6",
     "url": "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/meta.json"
   },
   "meta-runtime": {
@@ -48,7 +48,7 @@
     "url": "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/role-arg-spec.json"
   },
   "rulebook": {
-    "etag": "61ccd5e187ba837b5cea6ad1f696a29fb1e2a8f14278dddda6269c43c5594c7f",
+    "etag": "1d0929e47a132677f77971d97d208d98bd7e38c7028b04a79c55eebcc23e9e32",
     "url": "https://raw.githubusercontent.com/ansible/ansible-rulebook/main/ansible_rulebook/schema/ruleset_schema.json"
   },
   "tasks": {

@@ -88,7 +88,8 @@ def load_config(config_file: str | None) -> tuple[dict[Any, Any], str | None]:
 
     config = clean_json(config_lintable.data)
     if not isinstance(config, dict):
-        raise RuntimeError("Schema failed to properly validate the config file.")
+        msg = "Schema failed to properly validate the config file."
+        raise RuntimeError(msg)
     config["config_file"] = config_path
     config_dir = os.path.dirname(config_path)
     expand_to_normalized_paths(config, config_dir)
@@ -158,9 +159,11 @@ class WriteArgAction(argparse.Action):
     ) -> None:
         """Create the argparse action with WriteArg-specific defaults."""
         if nargs is not None:
-            raise ValueError("nargs for WriteArgAction must not be set.")
+            msg = "nargs for WriteArgAction must not be set."
+            raise ValueError(msg)
         if const is not None:
-            raise ValueError("const for WriteArgAction must not be set.")
+            msg = "const for WriteArgAction must not be set."
+            raise ValueError(msg)
         super().__init__(
             option_strings=option_strings,
             dest=dest,
@@ -289,15 +292,6 @@ def get_cli_parser() -> argparse.ArgumentParser:
         default=False,
         action="store_true",
         help="parseable output, same as '-f pep8'",
-    )
-    parser.add_argument(
-        "--progressive",
-        dest="progressive",
-        default=False,
-        action="store_true",
-        help="Return success if number of violations compared with "
-        "previous git commit has not increased. This feature works "
-        "only in git repositories.",
     )
     parser.add_argument(
         "--project-dir",
@@ -469,7 +463,6 @@ def merge_config(file_config: dict[Any, Any], cli_config: Options) -> Options:
         "quiet",
         "strict",
         "use_default_rules",
-        "progressive",
         "offline",
     )
     # maps lists to their default config values
@@ -589,9 +582,8 @@ def get_config(arguments: list[str]) -> Options:
         )
 
     if not options.project_dir or not os.path.exists(options.project_dir):
-        raise RuntimeError(
-            f"Failed to determine a valid project_dir: {options.project_dir}",
-        )
+        msg = f"Failed to determine a valid project_dir: {options.project_dir}"
+        raise RuntimeError(msg)
 
     # Compute final verbosity level by subtracting -q counter.
     options.verbosity -= options.quiet

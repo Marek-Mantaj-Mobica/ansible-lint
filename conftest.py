@@ -18,21 +18,20 @@ for module in ["ansible", "black", "mypy", "pylint"]:
     if not importlib.util.find_spec(module):
         missing.append(module)
 if missing:
-    print(
-        f"FATAL: Missing modules: {', '.join(missing)} -- probably you missed installing test requirements with: pip install -e '.[test]'",
-        file=sys.stderr,
+    pytest.exit(
+        reason=f"FATAL: Missing modules: {', '.join(missing)} -- probably you missed installing test requirements with: pip install -e '.[test]'",
+        returncode=1,
     )
-    sys.exit(1)
 # we need to be sure that we have the requirements installed as some tests
 # might depend on these. This approach is compatible with GHA caching.
 try:
     subprocess.check_output(
-        ["./tools/install-reqs.sh"],
+        ["./tools/install-reqs.sh"],  # noqa: S603
         stderr=subprocess.PIPE,
         text=True,
     )
 except subprocess.CalledProcessError as exc:
-    print(f"{exc}\n{exc.stderr}\n{exc.stdout}", file=sys.stderr)
+    print(f"{exc}\n{exc.stderr}\n{exc.stdout}", file=sys.stderr)  # noqa: T201
     sys.exit(1)
 
 # ruff: noqa: E402
@@ -53,6 +52,3 @@ if not HAS_LIBYAML:
         pytest.fail(
             "FATAL: For testing, we require pyyaml to be installed with its native extension, missing it would make testing 3x slower and risk missing essential bugs.",
         )
-
-
-os.environ["NO_COLOR"] = "1"

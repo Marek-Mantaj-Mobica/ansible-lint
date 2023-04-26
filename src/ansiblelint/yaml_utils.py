@@ -201,10 +201,8 @@ def _nested_items_path(
             functools.partial(enumerate, data_collection),
         )
     else:
-        raise TypeError(
-            f"Expected a dict or a list but got {data_collection!r} "
-            f"of type '{type(data_collection)}'",
-        )
+        msg = f"Expected a dict or a list but got {data_collection!r} of type '{type(data_collection)}'"
+        raise TypeError(msg)
     for key, value in convert_data_collection_to_tuples():
         if key in (SKIPPED_RULES_KEY, "__file__", "__line__", *ignored_keys):
             continue
@@ -223,7 +221,8 @@ def get_path_to_play(
 ) -> list[str | int]:
     """Get the path to the play in the given file at the given line number."""
     if lineno < 1:
-        raise ValueError(f"expected lineno >= 1, got {lineno}")
+        msg = f"expected lineno >= 1, got {lineno}"
+        raise ValueError(msg)
     if lintable.kind != "playbook" or not isinstance(ruamel_data, CommentedSeq):
         return []
     lc: LineCol  # lc uses 0-based counts # pylint: disable=invalid-name
@@ -240,7 +239,9 @@ def get_path_to_play(
             next_play_line_index = None
 
         lc = play.lc  # pylint: disable=invalid-name
-        assert isinstance(lc.line, int)
+        if not isinstance(lc.line, int):
+            msg = f"expected lc.line to be an int, got {lc.line!r}"
+            raise RuntimeError(msg)
         if lc.line == line_index:
             return [play_index]
         if play_index > 0 and prev_play_line_index < line_index < lc.line:
@@ -265,14 +266,16 @@ def get_path_to_task(
 ) -> list[str | int]:
     """Get the path to the task in the given file at the given line number."""
     if lineno < 1:
-        raise ValueError(f"expected lineno >= 1, got {lineno}")
-    if lintable.kind in ("tasks", "handlers"):
-        assert isinstance(ruamel_data, CommentedSeq)
-        return _get_path_to_task_in_tasks_block(lineno, ruamel_data)
-    if lintable.kind == "playbook":
-        assert isinstance(ruamel_data, CommentedSeq)
-        return _get_path_to_task_in_playbook(lineno, ruamel_data)
-    # if lintable.kind in ["yaml", "requirements", "vars", "meta", "reno", "test-meta"]:
+        msg = f"expected lineno >= 1, got {lineno}"
+        raise ValueError(msg)
+    if lintable.kind in ("tasks", "handlers", "playbook"):
+        if not isinstance(ruamel_data, CommentedSeq):
+            msg = f"expected ruamel_data to be a CommentedSeq, got {ruamel_data!r}"
+            raise ValueError(msg)
+        if lintable.kind in ("tasks", "handlers"):
+            return _get_path_to_task_in_tasks_block(lineno, ruamel_data)
+        if lintable.kind == "playbook":
+            return _get_path_to_task_in_playbook(lineno, ruamel_data)
 
     return []
 
@@ -327,7 +330,7 @@ def _get_path_to_task_in_playbook(
     return []
 
 
-def _get_path_to_task_in_tasks_block(
+def _get_path_to_task_in_tasks_block(  # noqa: C901
     lineno: int,  # 1-based
     tasks_block: CommentedSeq,
     last_lineno: int | None = None,  # 1-based
@@ -369,7 +372,9 @@ def _get_path_to_task_in_tasks_block(
                 task_path: list[str | int] = [task_index]
                 return task_path + list(subtask_path)
 
-        assert isinstance(task.lc.line, int)
+        if not isinstance(task.lc.line, int):
+            msg = f"expected task.lc.line to be an int, got {task.lc.line!r}"
+            raise RuntimeError(msg)
         if task.lc.line == line_index:
             return [task_index]
         if task_index > 0 and prev_task_line_index < line_index < task.lc.line:
@@ -900,7 +905,8 @@ class FormattedYAML(YAML):
     def loads(self, stream: str) -> Any:
         """Load YAML content from a string while avoiding known ruamel.yaml issues."""
         if not isinstance(stream, str):
-            raise NotImplementedError(f"expected a str but got {type(stream)}")
+            msg = f"expected a str but got {type(stream)}"
+            raise NotImplementedError(msg)
         text, preamble_comment = self._pre_process_yaml(stream)
         data = self.load(stream=text)
         if preamble_comment is not None:
