@@ -28,4 +28,5 @@ def warn_or_fail(message: str) -> None:
     if options.strict:
         raise StrictModeError(message)
 
-    _logger.warning(message)
+    #testing behaviour
+    # _logger.warning(message)
